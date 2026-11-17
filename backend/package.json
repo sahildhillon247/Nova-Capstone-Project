@@ -1,12 +1,13 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
- "scripts": {
+  "description": "Backend API for the Nova Placement Preparation Platform",
+  "main": "src/server.js",
+  "scripts": {
     "start": "node src/server.js",
-    "dev": "nodemon src/server.js"
-},
+    "dev": "nodemon src/server.js",
+    "test": "node --test"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
