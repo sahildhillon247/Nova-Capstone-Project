@@ -1,0 +1,16 @@
+                                                     QUERY PLAN                                                     
+--------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=233.65..237.81 rows=1666 width=45) (actual time=1.562..1.628 rows=1666.00 loops=1)
+   Sort Key: problem_title
+   Sort Method: quicksort  Memory: 153kB
+   Buffers: shared hit=85
+   ->  Seq Scan on problems  (cost=0.00..144.50 rows=1666 width=45) (actual time=0.005..0.286 rows=1666.00 loops=1)
+         Filter: ((difficulty)::text = 'Easy'::text)
+         Rows Removed by Filter: 3334
+         Buffers: shared hit=82
+ Planning:
+   Buffers: shared hit=83 read=1
+ Planning Time: 0.461 ms
+ Execution Time: 1.713 ms
+(12 rows)
+

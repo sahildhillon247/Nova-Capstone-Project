@@ -1,0 +1,20 @@
+                                                                               QUERY PLAN                                                                               
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Hash Right Anti Join  (cost=194.79..1274.60 rows=4950 width=40) (actual time=5.539..5.870 rows=4950.00 loops=1)
+   Hash Cond: ((up.problem_id)::text = (p.problem_id)::text)
+   Buffers: shared hit=84 read=46
+   ->  Index Only Scan using idx_user_progress_problem_id on user_progress up  (cost=0.29..943.29 rows=50000 width=18) (actual time=0.374..2.043 rows=50000.00 loops=1)
+         Heap Fetches: 93
+         Index Searches: 1
+         Buffers: shared hit=2 read=46
+   ->  Hash  (cost=132.00..132.00 rows=5000 width=40) (actual time=1.005..1.006 rows=5000.00 loops=1)
+         Buckets: 8192  Batches: 1  Memory Usage: 420kB
+         Buffers: shared hit=82
+         ->  Seq Scan on problems p  (cost=0.00..132.00 rows=5000 width=40) (actual time=0.003..0.429 rows=5000.00 loops=1)
+               Buffers: shared hit=82
+ Planning:
+   Buffers: shared hit=243
+ Planning Time: 0.489 ms
+ Execution Time: 6.092 ms
+(16 rows)
+
