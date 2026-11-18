@@ -1,53 +1,22 @@
-# Entity Relationship Diagram (ERD)
-## Nova Placement Preparation Platform
+# Nova Placement Preparation Platform - ER Diagram
 
-This document describes the database entities, attributes, primary keys,
-foreign keys, and relationships used in the Nova Placement Preparation Platform.
+## Entities
+- USERS: user_id (PK), user_name, email (UNIQUE), password_hash.
+- PLATFORMS: platform_id (PK), platform_name (UNIQUE).
+- PROBLEMS: problem_id (PK), problem_title, platform_id (FK), problem_url, difficulty.
+- TOPICS: topic_id (PK), topic_name (UNIQUE).
+- PROBLEM_TOPICS: composite primary key (problem_id, topic_id).
+- USER_PROGRESS: composite primary key (user_id, problem_id).
 
-## 1. ER Diagram
+## Relationships
+1. One platform provides many problems.
+2. One user can have many progress records.
+3. One problem can appear in many progress records.
+4. Problems and topics have a many-to-many relationship through PROBLEM_TOPICS.
 
-```mermaid
-erDiagram
-    USERS {
-        VARCHAR user_id PK
-        VARCHAR user_name
-        VARCHAR email UK
-        VARCHAR password_hash
-    }
-
-    PLATFORMS {
-        VARCHAR platform_id PK
-        VARCHAR platform_name UK
-    }
-
-    PROBLEMS {
-        VARCHAR problem_id PK
-        VARCHAR problem_title
-        VARCHAR platform_id FK
-        TEXT problem_url
-        VARCHAR difficulty
-    }
-
-    TOPICS {
-        VARCHAR topic_id PK
-        VARCHAR topic_name UK
-    }
-
-    PROBLEM_TOPICS {
-        VARCHAR problem_id PK, FK
-        VARCHAR topic_id PK, FK
-    }
-
-    USER_PROGRESS {
-        VARCHAR user_id PK, FK
-        VARCHAR problem_id PK, FK
-        VARCHAR status
-        TIMESTAMP started_at
-        TIMESTAMP completed_at
-    }
-
-    PLATFORMS ||--o{ PROBLEMS : contains
-    USERS ||--o{ USER_PROGRESS : tracks
-    PROBLEMS ||--o{ USER_PROGRESS : has
-    PROBLEMS ||--o{ PROBLEM_TOPICS : belongs_to
-    TOPICS ||--o{ PROBLEM_TOPICS : categorizes
+## Constraints
+- Email, platform_name, and topic_name are unique.
+- Difficulty: Easy, Medium, Hard.
+- Status: Pending, Attempted, Solved.
+- Junction table foreign keys use ON DELETE CASCADE.
+- Refer to 03_schema.sql for complete definitions.
