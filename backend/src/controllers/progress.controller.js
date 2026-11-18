@@ -23,7 +23,19 @@ async function markProblemSolved(req, res) {
                 message: "Problem not found"
             });
         }
+        const existingProgress = await prisma.userProgress.findUnique({
+                where: {
+                    userId_problemId: {
+                        userId,
+                        problemId
+                    }
+                },
+                select: {
+                    completedAt: true
+                }
+            });
 
+        const completedAt = existingProgress?.completedAt || new Date();
         const progress = await prisma.userProgress.upsert({
             where: {
                 userId_problemId: {
@@ -33,14 +45,14 @@ async function markProblemSolved(req, res) {
             },
             update: {
                 status: "SOLVED",
-                completedAt: new Date()
+                completedAt: completedAt
             },
             create: {
                 userId,
                 problemId,
                 status: "SOLVED",
                 startedAt: new Date(),
-                completedAt: new Date()
+                completedAt: completedAt
             },
             include: {
                 problem: {
