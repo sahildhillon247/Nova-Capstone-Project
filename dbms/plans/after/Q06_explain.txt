@@ -1,0 +1,32 @@
+                                                                         QUERY PLAN                                                                          
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Nested Loop  (cost=61.12..72.34 rows=16 width=48) (actual time=0.337..0.356 rows=16.00 loops=1)
+   Buffers: shared hit=22 read=2
+   ->  Index Scan using users_pkey on users u  (cost=0.28..8.29 rows=1 width=33) (actual time=0.009..0.009 rows=1.00 loops=1)
+         Index Cond: ((user_id)::text = 'BENCH_U_000001'::text)
+         Index Searches: 1
+         Buffers: shared hit=3
+   ->  Merge Join  (cost=60.84..63.89 rows=16 width=45) (actual time=0.325..0.342 rows=16.00 loops=1)
+         Merge Cond: ((p.problem_id)::text = (up.problem_id)::text)
+         Buffers: shared hit=19 read=2
+         ->  Index Scan using problems_pkey on problems p  (cost=0.28..268.28 rows=5000 width=40) (actual time=0.007..0.012 rows=49.00 loops=1)
+               Index Searches: 1
+               Buffers: shared hit=3
+         ->  Sort  (cost=60.56..60.60 rows=16 width=41) (actual time=0.315..0.316 rows=16.00 loops=1)
+               Sort Key: up.problem_id
+               Sort Method: quicksort  Memory: 26kB
+               Buffers: shared hit=16 read=2
+               ->  Bitmap Heap Scan on user_progress up  (cost=4.45..60.24 rows=16 width=41) (actual time=0.226..0.290 rows=16.00 loops=1)
+                     Recheck Cond: (((user_id)::text = 'BENCH_U_000001'::text) AND ((status)::text = 'Solved'::text))
+                     Heap Blocks: exact=16
+                     Buffers: shared hit=16 read=2
+                     ->  Bitmap Index Scan on idx_user_progress_user_status  (cost=0.00..4.45 rows=16 width=0) (actual time=0.210..0.210 rows=16.00 loops=1)
+                           Index Cond: (((user_id)::text = 'BENCH_U_000001'::text) AND ((status)::text = 'Solved'::text))
+                           Index Searches: 1
+                           Buffers: shared read=2
+ Planning:
+   Buffers: shared hit=285 read=2
+ Planning Time: 1.906 ms
+ Execution Time: 0.412 ms
+(28 rows)
+

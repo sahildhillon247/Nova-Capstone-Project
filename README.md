@@ -52,6 +52,20 @@ College students preparing for their first software engineering placements.
 
 The product may expand to support graduates, working professionals, and other placement candidates in future versions.
 
-## Project Status:&#x20;
+## Running the backend
 
-mvp planned, working on user login backend.
+```bash
+cd backend
+npm ci
+npm test
+npm start
+```
+
+The API starts on `http://localhost:3000` by default. Its health endpoint is
+available at `GET /api/health/`.
+
+## Project Status
+
+The database design and initial backend API are implemented. Authentication,
+problem management, completion tracking, and the progress dashboard remain
+planned MVP work.

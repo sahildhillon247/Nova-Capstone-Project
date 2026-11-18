@@ -1,0 +1,18 @@
+                                                       QUERY PLAN                                                       
+------------------------------------------------------------------------------------------------------------------------
+ Hash Join  (cost=1.23..151.91 rows=5000 width=66) (actual time=0.016..1.370 rows=5000.00 loops=1)
+   Hash Cond: ((p.platform_id)::text = (pl.platform_id)::text)
+   Buffers: shared hit=83
+   ->  Seq Scan on problems p  (cost=0.00..132.00 rows=5000 width=63) (actual time=0.004..0.373 rows=5000.00 loops=1)
+         Buffers: shared hit=82
+   ->  Hash  (cost=1.10..1.10 rows=10 width=39) (actual time=0.007..0.007 rows=10.00 loops=1)
+         Buckets: 1024  Batches: 1  Memory Usage: 9kB
+         Buffers: shared hit=1
+         ->  Seq Scan on platforms pl  (cost=0.00..1.10 rows=10 width=39) (actual time=0.001..0.002 rows=10.00 loops=1)
+               Buffers: shared hit=1
+ Planning:
+   Buffers: shared hit=233
+ Planning Time: 0.436 ms
+ Execution Time: 1.635 ms
+(14 rows)
+
