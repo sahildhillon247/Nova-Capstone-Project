@@ -1,0 +1,90 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Enums
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum ProgressStatus {
+  NOT_STARTED
+  SOLVED
+}
+
+// 1. Users
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  progress UserProgress[]
+}
+
+// 2. Platforms
+model Platform {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  problems Problem[]
+}
+
+// 3. Problems
+model Problem {
+  id         Int        @id @default(autoincrement())
+  title      String
+  difficulty Difficulty
+  problemUrl String
+  platformId Int
+
+  platform Platform       @relation(fields: [platformId], references: [id])
+  topics   ProblemTopic[]
+  progress UserProgress[]
+}
+
+// 4. Topics
+model Topic {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  problems ProblemTopic[]
+}
+
+// 5. ProblemTopic (many-to-many relation)
+model ProblemTopic {
+  problemId Int
+  topicId   Int
+
+  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  topic   Topic   @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@id([problemId, topicId])
+}
+
+// 6. UserProgress
+model UserProgress {
+  userId      Int
+  problemId   Int
+  status      ProgressStatus @default(NOT_STARTED)
+  startedAt   DateTime?
+  completedAt DateTime?
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@id([userId, problemId])
+}
