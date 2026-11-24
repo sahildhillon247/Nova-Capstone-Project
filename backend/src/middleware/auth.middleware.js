@@ -1,5 +1,6 @@
 
 const jwt = require("jsonwebtoken");
+const jwtSecret = process.env.JWT_SECRET || "nova-local-development-secret";
 
 function authenticateToken(req, res, next) {
     const authHeader = req.headers.authorization;
@@ -14,7 +15,7 @@ function authenticateToken(req, res, next) {
     const token = authHeader.split(" ")[1];
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, jwtSecret);
 
         req.user = {
             userId: decoded.userId

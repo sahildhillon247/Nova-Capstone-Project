@@ -64,6 +64,17 @@ npm start
 The API starts on `http://localhost:3000` by default. Its health endpoint is
 available at `GET /api/health/`.
 
+## Running the frontend
+
+```bash
+cd frontend
+npm ci
+npm run dev
+```
+
+The React frontend is powered by Vite and runs on the local development URL
+shown by Vite.
+
 ## Project Status
 
 The database design and initial backend API are implemented. Authentication,

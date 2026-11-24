@@ -3,18 +3,36 @@ const prisma = require("../config/prisma");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
+const localUsers = new Map();
+let nextLocalUserId = 1;
+const jwtSecret = process.env.JWT_SECRET || "nova-local-development-secret";
+
 function generateToken(userId) {
     return jwt.sign(
         { userId },
-        process.env.JWT_SECRET,
+        jwtSecret,
         { expiresIn: "7d" }
     );
+}
+
+function isLocalAuthEnabled() {
+    return !process.env.DATABASE_URL;
+}
+
+function publicUser(user) {
+    return {
+        id: user.id,
+        name: user.name,
+        email: user.email
+    };
 }
 
 // POST /api/auth/signup
 async function signup(req, res) {
     try {
-        const { name, email, password } = req.body;
+        const name = typeof req.body.name === "string" ? req.body.name.trim() : "";
+        const email = typeof req.body.email === "string" ? req.body.email.trim().toLowerCase() : "";
+        const { password } = req.body;
 
         if (!name || !email || !password) {
             return res.status(400).json({
@@ -30,17 +48,43 @@ async function signup(req, res) {
             });
         }
 
-        const normalizedEmail = email.trim().toLowerCase();
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide a valid email address"
+            });
+        }
 
         const passwordHash = await bcrypt.hash(password, 10);
 
-        const user = await prisma.user.create({
-            data: {
-                name: name.trim(),
-                email: normalizedEmail,
-                passwordHash
+        let user;
+
+        if (isLocalAuthEnabled()) {
+            if (localUsers.has(email)) {
+                return res.status(409).json({
+                    success: false,
+                    message: "An account with this email already exists"
+                });
             }
-        });
+
+            user = {
+                id: nextLocalUserId++,
+                name: name.trim(),
+                email,
+                passwordHash,
+                createdAt: new Date()
+            };
+            localUsers.set(email, user);
+            console.warn("DATABASE_URL is not configured; using in-memory development auth.");
+        } else {
+            user = await prisma.user.create({
+                data: {
+                    name: name.trim(),
+                    email,
+                    passwordHash
+                }
+            });
+        }
 
         const token = generateToken(user.id);
 
@@ -48,11 +92,7 @@ async function signup(req, res) {
             success: true,
             message: "Account created successfully",
             data: {
-                user: {
-                    id: user.id,
-                    name: user.name,
-                    email: user.email
-                },
+                user: publicUser(user),
                 token
             }
         });
@@ -76,7 +116,8 @@ async function signup(req, res) {
 // POST /api/auth/login
 async function login(req, res) {
     try {
-        const { email, password } = req.body;
+        const email = typeof req.body.email === "string" ? req.body.email.trim().toLowerCase() : "";
+        const { password } = req.body;
 
         if (!email || !password) {
             return res.status(400).json({
@@ -85,11 +126,11 @@ async function login(req, res) {
             });
         }
 
-        const user = await prisma.user.findUnique({
-            where: {
-                email: email.trim().toLowerCase()
-            }
-        });
+        const user = isLocalAuthEnabled()
+            ? localUsers.get(email)
+            : await prisma.user.findUnique({
+                where: { email }
+            });
 
         if (!user) {
             return res.status(401).json({
@@ -116,11 +157,7 @@ async function login(req, res) {
             success: true,
             message: "Login successful",
             data: {
-                user: {
-                    id: user.id,
-                    name: user.name,
-                    email: user.email
-                },
+                user: publicUser(user),
                 token
             }
         });
@@ -137,15 +174,17 @@ async function login(req, res) {
 // GET /api/auth/me
 async function getMe(req, res) {
     try {
-        const user = await prisma.user.findUnique({
-            where: { id: req.user.userId },
-            select: {
-                id: true,
-                name: true,
-                email: true,
-                createdAt: true
-            }
-        });
+        const user = isLocalAuthEnabled()
+            ? [...localUsers.values()].find((candidate) => candidate.id === req.user.userId)
+            : await prisma.user.findUnique({
+                where: { id: req.user.userId },
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    createdAt: true
+                }
+            });
 
         if (!user) {
             return res.status(404).json({
